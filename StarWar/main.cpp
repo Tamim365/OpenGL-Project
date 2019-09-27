@@ -5,12 +5,12 @@
 #include <math.h>
 
 static float	tx	=  0.0;
-static float	ty	=  0.0;
 static float    MoveEnemy = 0.0;
 static int      direction = 1;
 long long int   score=0;
 long long int   HighScore=0;
 int             health=100;
+int             bullet_on = 0;
 
 void display();
 void init();
@@ -64,6 +64,15 @@ void display()
 
     //bullet
 
+    glPushMatrix();
+    if(bullet_on)
+    {
+        static int tb=tx;
+        bullet(tb-.5,-33);
+        if(bullet_on==0) tb=tx;
+    }
+    glPopMatrix();
+
     //ship
     glPushMatrix();
     glTranslatef(tx,0,0);
@@ -78,10 +87,6 @@ void display()
     enemy(6,-6);
     glPopMatrix();
 */
-   // glPushMatrix();
-   // glTranslatef(0,ty,0);
-    //bullet(0,-33);
-   // glPopMatrix();
 	glFlush();
 }
 
@@ -121,24 +126,19 @@ void ship(){
 
 void my_keyboard(int key, int x, int y)
 {
-
-	switch (key) {
-
-		case GLUT_KEY_LEFT:
-		    if(tx >= -28)
-                tx -= .5;
-            score+=3;
-			break;
-
-		case GLUT_KEY_RIGHT:
-		    if(tx <= 16)
-                tx += .5;
-            score+=3;
-			break;
-	  default:
-			break;
+	if(key==GLUT_KEY_LEFT){
+        if(tx >= -28)
+            tx -= .5;
+        score+=3;
 	}
-	//if(key==GLUT_KEY_UP) bullet(0,-33);
+	if(key==GLUT_KEY_RIGHT){
+        if(tx <= 16)
+            tx += .5;
+        score+=3;
+	}
+	if(key==GLUT_KEY_UP){
+        bullet_on=1;
+    }
 }
 
 void renderbitmap(float x, float y, void *font, char *Xtring){
@@ -224,11 +224,18 @@ void enemy(int x, int y){
 }
 
 void bullet(int x, int y){
+    static float ty	= 0.0;
     glPushMatrix();
+    if(bullet_on) glTranslatef(0,ty,0);
     glBegin(GL_POLYGON);
     glColor3f(1,1,0);
     DrawBox(x,x+1,y,4+y);
     glEnd();
+    ty+=3;
+    if(ty>80){
+        ty=0.0;
+        bullet_on=0;
+    }
     glPopMatrix();
 }
 
