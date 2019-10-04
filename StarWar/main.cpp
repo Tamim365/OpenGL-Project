@@ -1,8 +1,9 @@
-#include<stdio.h>
-#include<windows.h>
+#include <stdio.h>
+#include <windows.h>
 #include <GL/glut.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 
 static float	tx	=  0.0;
 static float    MoveEnemy = 0.0;
@@ -14,8 +15,12 @@ int             all_bullets[10];
 float           bullet_speed[10];
 int             v_enemy[5];
 int             h_enemy[5];
-int             ran_enemy;
-
+int             nxt_venemy=0;
+int             nxt_henemy=0;
+int             xmove_en[5]={0};
+int             ymove_en[5]={0};
+int             xpos_en = rand() % 35;
+int             ypos_en = rand() % 10;
 
 void display();
 void init();
@@ -33,6 +38,7 @@ void DrawEnemy(int x, int y);
 void enemies();
 void DrawBullet(int x, int y);
 void bullets();
+void delay(unsigned int mseconds);
 
 
 int main()
@@ -42,6 +48,8 @@ int main()
     glutCreateWindow ("Star Wars");
     init();
     for(int i=0; i<10 ; i++) all_bullets[i]=-100;
+    for(int i=0; i<5 ; i++) v_enemy[i]=0;
+    for(int i=0; i<5 ; i++) h_enemy[i]=0;
     glutDisplayFunc(display);
     glutSpecialFunc(arrow_keyboard);
     glutKeyboardFunc(my_keyboard);
@@ -62,6 +70,11 @@ void display()
 {
     glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
     glShadeModel(GL_SMOOTH);
+
+    glPushMatrix();
+    enemies();
+    glPopMatrix();
+
     glColor3f(.85,.85,.85);
     DrawBox(18,30,40,-40);
     writeText("STAR WARS",20,30,GLUT_BITMAP_TIMES_ROMAN_24);
@@ -82,10 +95,6 @@ void display()
     glPushMatrix();
     glTranslatef(tx,0,0);
     ship();
-    glPopMatrix();
-    //enemy
-    glPushMatrix();
-    enemies();
     glPopMatrix();
     /*
     	glPushMatrix();
@@ -221,6 +230,12 @@ void timer(int)
     glutTimerFunc(100, timer, 0);
 }
 
+void delay(unsigned int mseconds)
+{
+    clock_t goal = mseconds + clock();
+    while (goal > clock());
+}
+
 void drawCircle(float rx, float ry, int half, float xp, float yp)
 {
     glPushMatrix();
@@ -243,6 +258,7 @@ void DrawEnemy(int x, int y)
 {
     //glPushMatrix();
     //upper circle part
+    glColor3f(1,0,0);
     drawCircle(1.25f,2.5f,1,-23.5+x,35+y);
     glColor3f(1,1,1);
     drawCircle(.25f,.75f,2,-24+x,36+y);
@@ -258,52 +274,43 @@ void DrawEnemy(int x, int y)
 
 void enemies ()
 {
-//    ran_enemy=rand()%2;
-//    if(ran_enemy==0)
-//    {
-        //Horizontal
-        static int move_x=0;
-        glPushMatrix();
-        glTranslatef(move_x,0,0);
-        if(direction)
-            move_x+=1;
-        else
-            move_x-=1;
-        if(move_x>39)
-            direction=0;
-        if(move_x<-4)
-            direction=1;
-        DrawEnemy(0,0);
-        glPopMatrix();
-       // glFlush();
-
-        //vertical
-        static int move_y=0;
-        glPushMatrix();
-        glTranslatef(0,-move_y,0);
-        move_y++;
-        if(move_y>=80) move_y = 0;
-        DrawEnemy(0,0);
-        glPopMatrix();
-        //glFlush();
-//    }
-//    if(ran_enemy==1)
-//    {
-//        glPushMatrix();
-//        glTranslatef(MoveEnemy,0,0);
-//        if(direction)
-//            MoveEnemy+=1;
-//        else
-//            MoveEnemy-=1;
-//        if(MoveEnemy>39)
-//            direction=0;
-//        if(MoveEnemy<-4)
-//            direction=1;
-//        DrawEnemy(1,1);
-//        glPopMatrix();
-//        glFlush();
-//    }
-
+    v_enemy[nxt_venemy] = 1;
+    h_enemy[nxt_henemy] = 1;
+    for(int i=0; i<5; i++)
+    {
+        if(v_enemy[i])
+        {
+            glPushMatrix();
+            if(nxt_venemy % 2 == 0) glTranslatef(xmove_en[i],0,0);
+            else glTranslatef(-xmove_en[i],0,0);
+            xmove_en[i]+=1;
+            if(xmove_en[i]>70)
+                {
+                    v_enemy[i]=0;
+                    xmove_en[i] = 0;
+                    nxt_venemy = rand() % 4 ;
+                    ypos_en = rand() % 10;
+                }
+            if(nxt_venemy % 2 == 0) DrawEnemy(-5,-ypos_en);
+            else DrawEnemy(42,-ypos_en);
+            glPopMatrix();
+        }
+        if (h_enemy[i])
+        {
+            glPushMatrix();
+            glTranslatef(0,-ymove_en[i],0);
+            ymove_en[i]++;
+            if(ymove_en[i]>80)
+                {
+                    h_enemy[i]=0;
+                    ymove_en[i] = 0 ;
+                    nxt_henemy = rand() % 4 ;
+                    xpos_en = rand() % 35;
+                }
+            DrawEnemy(xpos_en,0);
+            glPopMatrix();
+        }
+    }
 }
 
 void DrawBullet(int x, int y)
