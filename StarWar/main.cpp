@@ -4,25 +4,41 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <MMsystem.h>
+#include <bits/stdc++.h>
 
 static float	tx	=  0.0;
-static float    MoveEnemy = 0.0;
 static int      direction = 1;
 long long int   score=0;
 long long int   HighScore=0;
 int             health=100;
+int             choice=0;
 int             all_bullets[10];
 float           bullet_speed[10];
-int             v_enemy[5];
-int             h_enemy[5];
+int             v_enemy[5]={0};
+int             h_enemy[5]={0};
 int             nxt_venemy=0;
 int             nxt_henemy=0;
 int             xmove_en[5]={0};
 int             ymove_en[5]={0};
 int             xpos_en = rand() % 35;
-int             ypos_en = rand() % 10;
+int             ypos_en = rand() % 5;
+//int             ypos_en = 4;
+int             bul_x1[10];
+int             bul_x2[10];
+int             bul_y[10];
+int             ven_x1[5]={0};
+int             ven_x2[5];
+int             ven_y[5];
+int             ven_pos[] = {0,0};
+double          hen_y[5]={0.0};
+int             hen_pos[]={0,0};
+bool            v_crash = false;
+bool            h_crash = false;
+
 
 void display();
+void OptionManue();
 void init();
 void ship();
 void writeText(char *a, float x, float y, void *font);
@@ -40,23 +56,69 @@ void DrawBullet(int x, int y);
 void bullets();
 void delay(unsigned int mseconds);
 
+using namespace std;
 
 int main()
 {
+    OptionManue();
     glutInitDisplayMode (GLUT_SINGLE | GLUT_RGB);
     glutInitWindowSize (1000, 600);
     glutCreateWindow ("Star Wars");
     init();
-    for(int i=0; i<10 ; i++) all_bullets[i]=-100;
-    for(int i=0; i<5 ; i++) v_enemy[i]=0;
-    for(int i=0; i<5 ; i++) h_enemy[i]=0;
+    for(int i=0; i<10 ; i++)
+        all_bullets[i]=-100;
+    for(int i=0; i<10 ; i++)
+        bul_x2[i]=3;
+    for(int i=0; i<10 ; i++)
+        bul_y[i]=12;
+    for(int i=0; i<5 ; i++)
+        ven_x2[i]=48;
     glutDisplayFunc(display);
     glutSpecialFunc(arrow_keyboard);
     glutKeyboardFunc(my_keyboard);
     glutReshapeFunc(my_reshape);
     glutTimerFunc(0, timer,0);
-    glutMainLoop();
-    return 0;
+    if(choice == 1)
+    {
+        glutMainLoop();
+    }
+    else if(choice == 2)
+        return 0;
+}
+
+
+void OptionManue()
+{
+    static int flag = 1;
+    if(flag)
+    {
+        cout<<"\t:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::\n";
+        cout<<"\t:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::\n";
+        cout<<"\t::'######::'########::::'###::::'########:::::'##:::::'##::::'###::::'########:::'######:::\n";
+        cout<<"\t:'##... ##:... ##..::::'## ##::: ##.... ##:::: ##:'##: ##:::'## ##::: ##.... ##:'##... ##::\n";
+        cout<<"\t: ##:::..::::: ##:::::'##:. ##:: ##:::: ##:::: ##: ##: ##::'##:. ##:: ##:::: ##: ##:::..:::\n";
+        cout<<"\t:. ######::::: ##::::'##:::. ##: ########::::: ##: ##: ##:'##:::. ##: ########::. ######:::\n";
+        cout<<"\t::..... ##:::: ##:::: #########: ##.. ##:::::: ##: ##: ##: #########: ##.. ##::::..... ##::\n";
+        cout<<"\t:'##::: ##:::: ##:::: ##.... ##: ##::. ##::::: ##: ##: ##: ##.... ##: ##::. ##::'##::: ##::\n";
+        cout<<"\t:. ######::::: ##:::: ##:::: ##: ##:::. ##::::. ###. ###:: ##:::: ##: ##:::. ##:. ######:::\n";
+        cout<<"\t::......::::::..:::::..:::::..::..:::::..::::::...::...:::..:::::..::..:::::..:::......::::\n";
+        cout<<"\t:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::\n";
+        cout<<"\n\n\n\t1. Play Game\n";
+        cout<<"\t2. Exit";
+        cout<<"\n\n\tEnter your choice >> ";
+        flag = 0;
+    }
+    cin>>choice;
+    if(choice == 1 || choice == 2)
+    {
+        return ;
+    }
+    else
+    {
+        cout<<"\n\t\tInvalid Choice!";
+        cout<<"\n\n\tEnter your choice >> ";
+        OptionManue();
+    }
 }
 
 void init()
@@ -69,6 +131,13 @@ void init()
 void display()
 {
     glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
+    static int bgsong= 0;
+    if(bgsong==0)
+        PlaySound("bgmusic.wav", NULL, SND_FILENAME| SND_ASYNC);
+    bgsong ++ ;
+//    printf("%d\n",bgsong);
+    if(bgsong == 985)
+        bgsong = 0;
     glShadeModel(GL_SMOOTH);
 
     glPushMatrix();
@@ -141,25 +210,29 @@ void ship()
 
 void my_keyboard(unsigned char key, int x, int y)
 {
-	if(key=='a' || key=='A')
+    if(key=='a' || key=='A')
     {
         if(tx >= -28)
             tx -= .5;
-        score+=3;
+        score+=1;
     }
     if(key=='d' || key=='D')
     {
         if(tx <= 16)
             tx += .5;
-        score+=3;
+        score+=1;
     }
     if(key==' ')
     {
         static int bullet_no = 0;
         bullet_no++;
-        if(bullet_no>=10) bullet_no=0;
+        if(bullet_no>=10)
+            bullet_no=0;
         all_bullets[bullet_no] = tx;
+        bul_x1[bullet_no] = 28+tx;
+        bul_x2[bullet_no] = tx + 3;
         bullet_speed[bullet_no] = 0.0;
+        bul_y[bullet_no]=12;
     }
 }
 
@@ -168,14 +241,16 @@ void arrow_keyboard(int key, int x, int y)
     if(key==GLUT_KEY_LEFT)
     {
         if(tx >= -28)
+        {
             tx -= .5;
-        score+=3;
+        }
+        score+=1;
     }
     if(key==GLUT_KEY_RIGHT)
     {
         if(tx <= 16)
             tx += .5;
-        score+=3;
+        score+=1;
     }
 }
 
@@ -269,7 +344,7 @@ void DrawEnemy(int x, int y)
     DrawBox(-25+x,-22+x,35+y,33+y);
 
     //glPopMatrix();
-   // glFlush();
+    // glFlush();
 }
 
 void enemies ()
@@ -278,36 +353,95 @@ void enemies ()
     h_enemy[nxt_henemy] = 1;
     for(int i=0; i<5; i++)
     {
+
         if(v_enemy[i])
         {
             glPushMatrix();
-            if(nxt_venemy % 2 == 0) glTranslatef(xmove_en[i],0,0);
-            else glTranslatef(-xmove_en[i],0,0);
+            ven_y[i]= ypos_en;
+            if(nxt_venemy % 2 == 0)
+            {
+                direction = 1;
+                glTranslatef(xmove_en[i],0,0);
+                ven_x1[i]++;
+                ven_pos[0]=ven_x1[i];
+                ven_pos[1]=ypos_en;
+            }
+            else
+            {
+                direction = 0;
+                glTranslatef(-xmove_en[i],0,0);
+                ven_x2[i]--;
+                ven_pos[0]=ven_x2[i];
+                ven_pos[1]=ypos_en;
+            }
+
+            if(nxt_venemy % 2 == 0)
+                DrawEnemy(-10,-ypos_en*6);
+            else
+                DrawEnemy(48,-ypos_en*6);
+//            printf("En: %d X: %d Y: %d\n",i,ven_x2[i],ypos_en);
             xmove_en[i]+=1;
-            if(xmove_en[i]>70)
+            if (v_crash == true)
+            {
+                v_enemy[i]=0;
+                xmove_en[i] = 0;
+                static int wait = 0;
+                wait++;
+                if(wait==10)
                 {
-                    v_enemy[i]=0;
-                    xmove_en[i] = 0;
                     nxt_venemy = rand() % 4 ;
-                    ypos_en = rand() % 10;
+                    ypos_en = rand() % 5;
+                    ven_x1[i] = 0;
+                    ven_x2[i] = 48;
+                    v_crash = false;
+                    wait = 0;
                 }
-            if(nxt_venemy % 2 == 0) DrawEnemy(-5,-ypos_en);
-            else DrawEnemy(42,-ypos_en);
+            }
+            else if(xmove_en[i]>50)
+            {
+                v_enemy[i]=0;
+                xmove_en[i] = 0;
+                nxt_venemy = rand() % 4 ;
+                ypos_en = rand() % 5;
+                ven_x1[i] = 0;
+                ven_x2[i] = 48;
+            }
             glPopMatrix();
         }
+
         if (h_enemy[i])
         {
             glPushMatrix();
+            hen_y[i]=(ymove_en[i])/5;
+//            printf("En: %d X: %d Y: %g\n",i,xpos_en,hen_y[i]);
             glTranslatef(0,-ymove_en[i],0);
+            hen_pos[0]= xpos_en+4;
+            hen_pos[1]=hen_y[i];
             ymove_en[i]++;
-            if(ymove_en[i]>80)
+            if (h_crash == true)
+            {
+                h_enemy[i]=0;
+                ymove_en[i] = 0 ;
+                static int wait = 0;
+                wait++;
+                if(wait==10)
                 {
-                    h_enemy[i]=0;
-                    ymove_en[i] = 0 ;
                     nxt_henemy = rand() % 4 ;
                     xpos_en = rand() % 35;
+                    hen_y[i]=0;
+                    h_crash = false;
+                    wait=0;
                 }
-            DrawEnemy(xpos_en,0);
+            }
+            else if(ymove_en[i]>80)
+            {
+                h_enemy[i]=0;
+                ymove_en[i] = 0 ;
+                nxt_henemy = rand() % 4 ;
+                xpos_en = rand() % 35;
+                hen_y[i]=0;
+            }
+            DrawEnemy(xpos_en,+10);
             glPopMatrix();
         }
     }
@@ -329,16 +463,55 @@ void bullets()
         {
             glPushMatrix();
             glTranslatef(0,bullet_speed[i],0);
+            bul_y[i]--;
             DrawBullet(all_bullets[i]-.5,-33);
             bullet_speed[i]+=6;
-            ///if(all_bullets)
+//            printf("BUL: %d X: %d Y: %d\n",i,bul_x1[i],bul_y[i]);
+
+            ///Vertical Enemy-Bullet Collusion
+            if((ven_pos[0]-5>=bul_x1[i] && ven_pos[0]-5<=bul_x1[i]+2) && ven_pos[1]==bul_y[i] && direction == 1) //direction 1
+            {
+                bullet_speed[i]=0;
+                all_bullets[i] = -100;
+                bul_x1[i]=tx+28;
+                bul_x2[i]=3;
+                bul_y[i]=12;
+                score+=100;
+                v_crash = true;
+            }
+            else if((ven_pos[0]+6>=bul_x1[i]+1 && ven_pos[0]+6<=bul_x1[i]+4) && ven_pos[1]==bul_y[i] && direction == 0) //direction 0
+            {
+                bullet_speed[i]=0;
+                all_bullets[i] = -100;
+                bul_x1[i]=tx+28;
+                bul_x2[i]=3;
+                bul_y[i]=12;
+                score+=100;
+                v_crash = true;
+            }
+
+
+            ///Horizontal Enemy-Bullet Collusion
+            if(((hen_pos[0]>=bul_x1[i]-2 && hen_pos[0]<=bul_x1[i])||(hen_pos[0]>=bul_x1[i] && hen_pos[0]<=bul_x1[i]+2)) && hen_pos[1]==bul_y[i]+2)
+            {
+                bullet_speed[i]=0;
+                all_bullets[i] = -100;
+                bul_x1[i]=tx+28;
+                bul_x2[i]=3;
+                bul_y[i]=12;
+                score+=100;
+                h_crash = true;
+            }
+
             if(bullet_speed[i]>80)
             {
                 bullet_speed[i]=0.0;
                 all_bullets[i] = -100;
+                bul_x1[i]=tx+28;
+                bul_x2[i]=3;
+                bul_y[i]=12;
             }
             glPopMatrix();
         }
     }
 }
-

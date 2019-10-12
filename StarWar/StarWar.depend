@@ -1,10 +1,13 @@
 # depslib dependency file v1.0
-1569360807 source:c:\users\pc\desktop\codes\graphics\starwar\main.cpp
+1570907933 source:c:\users\pc\desktop\codes\graphics\starwar\main.cpp
 	<stdio.h>
 	<windows.h>
 	<GL/glut.h>
 	<stdlib.h>
 	<math.h>
+	<time.h>
+	<MMsystem.h>
+	<bits/stdc++.h>
 
 1341006776 e:\codeblocks\mingw\include\stdio.h
 	<_mingw.h>
@@ -233,4 +236,8 @@
 
 1341006774 e:\codeblocks\mingw\include\math.h
 	<_mingw.h>
+
+1341006776 e:\codeblocks\mingw\include\time.h
+	<_mingw.h>
+	<stddef.h>
 
