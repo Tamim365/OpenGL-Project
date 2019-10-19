@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1570907933 source:c:\users\pc\desktop\codes\graphics\starwar\main.cpp
+1571474456 source:c:\users\pc\desktop\codes\graphics\starwar\main.cpp
 	<stdio.h>
 	<windows.h>
 	<GL/glut.h>
